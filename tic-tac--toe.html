@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Tic Tac Toe</title>
+</head>
+<body>
+<div class = "frame">
+  <div class= "player">
+    <label>Player 1</label>
+    <input type = "textbox" id = "player1" val = "O" value = "player1"/>
+    <label>Player 2</label>
+    <input type = "textbox" id = "player2" val = "X" value="player2"/>
+	<span></span>
+  </div>
+  <div id = "grid" class = "grid"/>
+</div>
+</body>
+</html>
+
+<style>
+
+html{
+ width: 100%;
+ height: 100%;
+}
+body{
+    align-self: center;
+    width: 80%;
+    height: 80%;
+}
+.frame{
+    margin-left: 10%;
+    width: 80%;
+    height: 80%;
+    margin-right: 10%;
+	background-color: aliceblue;
+}
+.players span{
+    display: block;
+    margin-top: 20px;
+}
+.grid{
+    height: 50%;
+    width: 50%;
+	float: right;
+}
+.grid table{
+    width:80%;
+	height:80%;
+	border: 0;
+	border-spacing: 1px;
+}
+.grid table tr td{
+    background-color: lightgray;
+	text-align: center;
+}
+.player{
+    width:50%;
+	float:left;
+}
+.player span{
+     display:block;
+	 margin-top:20px;
+}
+</style>
+
+<script>
+ Object.prototype.querySelectorAllArray = function(selector){
+  return Array.prototype.slice.call(this.querySelectorAll(selector));
+ }
+ Array.prototype.isFound = function(val){
+     for(elem of this)
+	    if(elem == val) return true;
+	 return false;
+}
+ Array.prototype.resetGrid = function(val){
+  for(elem of this)
+	    elem.innerHTML = val;
+ }
+ Array.prototype.arrayEventListener = function(eventType, callback){
+     for(elem of this)
+	    elem.addEventListener(eventType, callback);
+ }
+ Array.prototype.findMatchingElement = function(selector){
+     var arr = new Array();
+	 var i = 0;
+     for(elem of this)
+	    if(elem.innerHTML == selector.innerHTML && elem.getAttribute('position') != selector.getAttribute('position')) arr[i++]=elem.getAttribute('position');
+	 return arr;
+ }
+function CheckVictory(a,b,c){
+    var victoryMulSeq = [6,28,45,80,105,120,162,504];
+    return ((2*b == a + c) || (2*a == b + c) || (2*c == a + b)) && victoryMulSeq.isFound(a*b*c) ;
+}
+function ValidateWinner(selector){
+     var cellArray = document.querySelectorAllArray('.grid table td');
+	 matchElemArray = cellArray.findMatchingElement(selector); // finding all the matching element depend on selector value
+     for(i=0;i<matchElemArray.length-1;i++)
+	    for(j=1;j<matchElemArray.length;j++)
+		    if(CheckVictory(parseInt(matchElemArray[i]),parseInt(matchElemArray[j]),parseInt(selector.getAttribute('position')))) return true; 
+}
+function switchCurrentPlayer(playerId){
+   return playerId == 'player1' ? document.querySelector('#player2') : document.querySelector('#player1');
+}
+// creating 3X3 game grid, having position 1 to 9 and dynamically assign some event.
+(function(){
+  var winningSeq = [[]];
+  var table = document.createElement('table');
+  var position = 1;
+  for(i =0; i < 3; i++){
+     var row = document.createElement('tr');
+	 for(j =0; j < 3; j++){
+	     var column = document.createElement('td');
+         column.setAttribute("position",position++);
+         column.style.width = column.style.height = 100/3 + '%';		 
+		 row.appendChild(column);
+	 }
+	 table.appendChild(row);
+  }
+  document.querySelector('#grid').appendChild(table);
+  window.addEventListener("load", function(){
+	  var count = 1; 
+	  var currentPlayer = document.querySelector('#player1');
+	  document.querySelector('.player span').innerHTML = "It's " + currentPlayer.value + " turns";
+	  
+	  document.querySelectorAllArray('.player input').arrayEventListener('change', function(){   // if textfield updates, update span also
+	         if(this.getAttribute('id') == currentPlayer.getAttribute('id'))
+			    document.querySelector('.player span').innerHTML = "It's " + currentPlayer.value + " turns";
+	  });
+      document.querySelectorAllArray('.grid table td').arrayEventListener('click', function(){
+	       
+	       !this.innerHTML ? count % 2 == 0 ? this.innerHTML = 'X' : this.innerHTML = 'O' : alert('      invalid pick. Retry   ');
+	       if(count >= 5 && count <= 9){
+	            if(ValidateWinner(this)){
+		          alert("    " + currentPlayer.value + "  wins  ");
+				  count = 1;
+			      currentPlayer = document.querySelector('#player1');
+				  document.querySelector('.player span').innerHTML = "It's " + currentPlayer.value + " turns";
+		          document.querySelectorAllArray('.grid table td').resetGrid('');
+				  return;
+				  }
+		        else if(count == 9){
+		           alert("    draw   ");
+				   count = 1;
+			       currentPlayer = document.querySelector('#player1');
+				   document.querySelector('.player span').innerHTML = "It's " + currentPlayer.value + " turns";
+		           document.querySelectorAllArray('.grid table td').resetGrid('');
+				   return;
+				   }
+		    }
+	        currentPlayer = switchCurrentPlayer(currentPlayer.getAttribute('id')); 
+	        document.querySelector('.player span').innerHTML = "It's " + currentPlayer.value + " turns";
+	        count++;
+	  });
+    });
+})();
+
+</script>
