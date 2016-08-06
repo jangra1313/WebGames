@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<title>Tree</title>
+<body>
+ <div class="row">
+  <div class="list" id = "container"></div>
+ </div>
+</body>
+</html>
+<script>
+// I used pure javascript, no library no framework
+// functions are global, it shouldn't be. but due to time constraint, i am using global function
+
+  Array.prototype.arrayEventListener = function(eventType, callback){
+     for(elem of this)
+	    elem.addEventListener(eventType, callback);
+ }
+ 
+ Element.prototype.query = function(selector){
+  return Array.prototype.slice.call(this.querySelectorAll(selector));
+ }
+ 
+//traverse the data come from server
+function traverseData(o,container){
+  for(i in o)
+    {
+      if(o[i] && o[i].constructor !== Array)
+        {
+		      var element = document.createElement(''+i+'');
+			  element.innerHTML = o[i];
+			  container.appendChild(element);
+              console.log(i +" is " + o[i]);
+        }
+      if(o[i].constructor === Array){
+	      var arrayElement = document.createElement(''+ i +'');
+		  arrayElement.setAttribute("class","collapsibleList");
+		  var expandCollapse = document.createElement('a');
+		  expandCollapse.innerHTML = '<';
+		  arrayElement.appendChild(expandCollapse);
+	      var arrayObj = o[i];
+          for(var obj in arrayObj){
+               traverseData(arrayObj[obj],arrayElement);
+			  }
+		  container.appendChild(arrayElement);
+        }
+    }
+}
+
+// this string will come from backend
+var text = '{"ul":[' +
+'{"li":"John" },' +
+'{"li":"Anna" },' +
+'{"ul":[' +
+'{"li":"abc" },' +
+'{"li":"def" }]},' +
+'{"li":"Peter"}]}';
+
+// data will be from server.
+data = JSON.parse(text);
+traverseData(data,document.querySelector('#container'));
+window.addEventListener("load", function(){
+document.querySelector('#container').query('ul a').arrayEventListener('click', function(e){
+             e.stopPropagation ();
+             console.log(this.parentElement);
+	         if(this.parentElement.getAttribute('class') == "collapsibleList"){
+			      this.parentElement.setAttribute('class','expandibleList');
+				  this.innerHTML = '>';
+				  }
+             else
+			 {
+                 this.parentElement.setAttribute('class','collapsibleList');
+				 this.innerHTML = '<';
+			}
+			 
+});
+});
+
+</script>
+
+<style>
+
+.collapsibleList{
+   display: block;
+}
+.collapsibleList ul{
+   display: block;
+}
+.collapsibleList li{
+display: list-item;
+}
+.expandibleList{
+   display: block;
+}
+.expandibleList li{
+display: none;
+}
+.expandibleList ul{
+display: none;
+}
+
+</style>
